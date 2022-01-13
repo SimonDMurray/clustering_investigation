@@ -6,8 +6,8 @@ import sys
 
 my_parser = argparse.ArgumentParser()
 
-my_parser.add_argument("-d", "--dist_file", help="the input distance file")
-my_parser.add_argument("-c", "--cells_file", help="the input cells file")
+my_parser.add_argument("-d", "--dist-file", help="the input distance file")
+my_parser.add_argument("-c", "--cells-file", help="the input cells file")
 my_parser.add_argument("-o", "--output", help="path to output combined file to")
 
 args = my_parser.parse_args()
