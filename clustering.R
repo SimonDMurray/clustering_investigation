@@ -10,7 +10,7 @@ if (do_rds) {
   srat <- readRDS(input_path)
 } else {
   adj.matrix <- Read10X(input_path)
-  srat <- CreateSeuratObject(adj.matrix,project = "pbmc10k") 
+  srat <- CreateSeuratObject(adj.matrix) 
 }
 srat <- NormalizeData(srat)
 srat <- FindVariableFeatures(srat, selection.method = "vst", nfeatures = 2000)
