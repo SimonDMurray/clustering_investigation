@@ -3,8 +3,6 @@ theargs <- R.utils::commandArgs(asValues=TRUE)
 output_path <- theargs$output
 input_path <- theargs$input
 do_rds <- !is.null(theargs$rds)
-output_path <- theargs$output
-input_path <- theargs$input
 if (do_rds) {
   srat <- readRDS(input_path)
 } else {
