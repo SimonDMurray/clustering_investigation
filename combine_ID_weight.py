@@ -80,7 +80,7 @@ for key in cell_dict.keys():
 
 output=outpath + "nn_combined.txt"
 with open(output, 'w') as conc_file:
-  for key in conc_dict.keys():
+  for key in sorted(conc_dict.keys()):
     out_list = [key]
     for val in conc_dict[key]:
       out_list.append(val)
