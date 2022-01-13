@@ -35,10 +35,10 @@ writeMM(nn_matrix, paste(output_path, "nn.mtx", sep=""))
 writeMM(snn_matrix, paste(output_path,"snn.mtx", sep=""))
 # Algorithms in Seurat clustering:
 # 1 = original Louvain algorithm; 2 = Louvain algorithm with multilevel refinement; 3 = SLM algorithm; 4 = Leiden algorithm
-res_vect = c(0.4, 0.6, 0.8, 1.0, 1.2)
+res_vect = c(0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5) 
 for ( alg in 1:4) {
   for ( res in res_vect) {
-    outfile = paste("srat_a", as.character(alg), "_r", gsub("\\.", "", as.character(res)), sep="")
+    outfile = paste("srat_a", as.character(alg), "_r", gsub("\\.", "", sprintf("%.1f", res)), sep="")
     srat_clust <- FindClusters(srat_graphs, resolution = res, algorithm = alg)
     write.table(srat_clust@active.ident, file=paste(output_path, outfile, sep=""), row.names=TRUE, col.names=FALSE, sep="\t", quote = FALSE)
   }
