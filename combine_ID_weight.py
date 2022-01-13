@@ -1,10 +1,36 @@
 #! /usr/bin/env python
 
 import csv
+import argparse
+import sys
+
+my_parser = argparse.ArgumentParser()
+
+my_parser.add_argument("-d", "--dist_file", help="the input distance file")
+my_parser.add_argument("-c", "--cells_file", help="the input cells file")
+my_parser.add_argument("-o", "--output", help="path to output combined file to")
+
+args = my_parser.parse_args()
+
+if args.dist_file is None:
+  print('Error: Dist file is not specified')
+  sys.exit()
+
+if args.cells_file is None:
+  print('Error: Cells file is not specified')
+  sys.exit()
+
+if args.output is None:
+  outpath="./"
+else:
+  outpath = args.output
+
+dist_path = args.dist_file
+cells_path = args.cells_file
 
 dist_dict = {}
 
-with open("/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/networks/nn_dist.txt", "r") as dist_file:
+with open(dist_path, "r") as dist_file:
   for dist in dist_file:
     dist = dist.strip("\n")
     dist_list = dist.split()
@@ -23,7 +49,7 @@ for key, dist_list in dist_dict.items():
 
 cell_dict = {}
 
-with open("/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/networks/nn_cells.txt", "r") as cell_file:
+with open(cells_path, "r") as cell_file:
   for cell in cell_file:
     cell = cell.strip("\n")
     cell_list = cell.split()
@@ -52,7 +78,8 @@ for key in cell_dict.keys():
   conc_dict[key] = conc_list
   conc_list = []
 
-with open('nn_combined.txt', 'w') as conc_file:
+output=outpath + "nn_combined.txt"
+with open(output, 'w') as conc_file:
   for key in conc_dict.keys():
     out_list = [key]
     for val in conc_dict[key]:
