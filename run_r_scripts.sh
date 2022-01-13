@@ -68,7 +68,7 @@ else
    neighbours_var="" 
 fi
 
-image=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/actions/cluster_investigation_v0.1.sif
+image=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/actions/images/cluster_investigation_v0.1.sif
 mount_options="/lustre,/nfs"
 
 /software/singularity-v3.5.3/bin/singularity exec -B $mount_options $image \

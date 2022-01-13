@@ -23,9 +23,9 @@ if (do_neighbours) {
   nn_cells <- nn_obj@nn.idx
   nn_dist <- nn_obj@nn.dist
   nn_id <- nn_obj@cell.names
-  write.table(nn_cells, file=paste(output_path, "nn_cells.txt", sep=""), row.names=TRUE, col.names=FALSE)
-  write.table(nn_dist, file=paste(output_path, "nn_dist.txt", sep=""), row.names=TRUE, col.names=FALSE)
-  write.table(nn_id, file=paste(output_path, "nn_id.txt", sep=""), row.names=FALSE, col.names=FALSE)
+  write.table(nn_cells, file=paste(output_path, "nn_cells.txt", sep=""), row.names=TRUE, col.names=FALSE, sep="\t", quote = FALSE)
+  write.table(nn_dist, file=paste(output_path, "nn_dist.txt", sep=""), row.names=TRUE, col.names=FALSE, sep="\t", quote = FALSE)
+  write.table(nn_id, file=paste(output_path, "nn_id.txt", sep=""), row.names=FALSE, col.names=FALSE, sep="\t", quote = FALSE)
 }
 srat_graphs <- FindNeighbors(srat)
 #srat_network <- as.network(srat_graphs@graphs$RNA_snn)
@@ -40,6 +40,6 @@ for ( alg in 1:4) {
   for ( res in res_vect) {
     outfile = paste("srat_a", as.character(alg), "_r", gsub("\\.", "", as.character(res)), sep="")
     srat_clust <- FindClusters(srat_graphs, resolution = res, algorithm = alg)
-    write.table(srat_clust@active.ident, file=paste(output_path, outfile, sep=""), row.names=TRUE, col.names=FALSE)
+    write.table(srat_clust@active.ident, file=paste(output_path, outfile, sep=""), row.names=TRUE, col.names=FALSE, sep="\t", quote = FALSE)
   }
 }

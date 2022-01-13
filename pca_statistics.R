@@ -25,4 +25,4 @@ for(row in 1:nrow(embed_matrix)) {
   pca_df[row, "euclidean"] <- euclidean
   pca_df[row, "dispersion"] <- dispersion
 }
-write.table(pca_df, file=paste(output_path, "pca_with_stats.txt", sep=""), row.names=TRUE, col.names = TRUE)
+write.table(pca_df, file=paste(output_path, "pca_with_stats.txt", sep=""), row.names=TRUE, col.names = TRUE, sep="\t", quote = FALSE)

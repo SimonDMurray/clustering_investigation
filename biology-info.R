@@ -14,4 +14,4 @@ srat[["percent.rb"]] <- PercentageFeatureSet(srat, pattern = "^RP[SL]")
 meta_data <- srat@meta.data
 colnames(meta_data) <- c("orig.ident", "UMI_reads", "expressed_genes", "percent.mt", "percent.rb")
 stats <- meta_data[c("UMI_reads", "expressed_genes", "percent.mt", "percent.rb")]
-write.table(stats, file=paste(output_path, "bio_stats.txt", sep=""), row.names=TRUE, col.names = TRUE)
+write.table(stats, file=paste(output_path, "bio_stats.txt", sep=""), row.names=TRUE, col.names = TRUE, sep="\t", quote = FALSE)
