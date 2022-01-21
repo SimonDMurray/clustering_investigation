@@ -7,8 +7,9 @@ input_path=""
 rds_type=false
 output_path="./"
 want_neighbours=false
+vol_path=""
 
-while getopts :s:i:o:rnh opt
+while getopts :s:i:o:v:rnh opt
 do
     case "$opt" in
     s)
@@ -19,6 +20,9 @@ do
       ;;
     o)
       output_path=$OPTARG
+      ;;
+    v)
+      vol_path=$OPTARG
       ;;
     r)
       rds_type=true
@@ -33,6 +37,7 @@ do
 -r rds input type (tenx input type assumed without this flag)
 -o path to output location (default CWD)
 -n want neighbour outputs from FindNeighbours function
+-v path for volatilty file if running visualise_clustering
 -h displays this message!
 EOU
       exit
@@ -68,8 +73,13 @@ else
    neighbours_var="" 
 fi
 
-image=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/actions/images/cluster_investigation_v0.1.sif
+image=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/actions/images/cluster_investigation_0_1.sif 
 mount_options="/lustre,/nfs"
 
-/software/singularity-v3.5.3/bin/singularity exec -B $mount_options $image \
-Rscript $script --input=$input_path --output=$output_path $rds_var $neighbours_var
+if [[ $vol_path != "" ]]; then
+  /software/singularity-v3.5.3/bin/singularity exec -B $mount_options $image \
+  Rscript $script --input=$input_path --output=$output_path --volatility=$vol_path $rds_var 
+else
+  /software/singularity-v3.5.3/bin/singularity exec -B $mount_options $image \
+  Rscript $script --input=$input_path --output=$output_path $rds_var $neighbours_var
+fi
