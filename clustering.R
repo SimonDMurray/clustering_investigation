@@ -1,6 +1,5 @@
 library(Seurat)
 library(Matrix)
-#library(network)
 theargs <- R.utils::commandArgs(asValues=TRUE)
 do_neighbours <- !is.null(theargs$neighbours)
 do_rds <- !is.null(theargs$rds)
@@ -28,7 +27,10 @@ if (do_neighbours) {
   write.table(nn_id, file=paste(output_path, "nn_id.txt", sep=""), row.names=FALSE, col.names=FALSE, sep="\t", quote = FALSE)
 }
 srat_graphs <- FindNeighbors(srat)
-#srat_network <- as.network(srat_graphs@graphs$RNA_snn)
+if (!do_neighbours) {
+  nn_id <- srat_graphs@graphs$RNA_nn@Dimnames[[1]]
+  write.table(nn_id, file=paste(output_path, "nn_id.txt", sep=""), row.names=FALSE, col.names=FALSE, sep="\t", quote = FALSE)
+}
 nn_matrix <- as(as.matrix(srat_graphs@graphs$RNA_nn), "dgCMatrix")
 snn_matrix <- as(as.matrix(srat_graphs@graphs$RNA_snn), "dgCMatrix")
 writeMM(nn_matrix, paste(output_path, "nn.mtx", sep=""))
