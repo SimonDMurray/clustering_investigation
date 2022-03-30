@@ -65,7 +65,7 @@ custom_clusters <- DimPlot(srat_graphs, group.by = "nesting", cols = colours) + 
 level_clusters <- DimPlot(srat_graphs, group.by = "nesting", cells.highlight = level_bar, cols.highlight = "#004225", sizes.highlight = 0.1, label = TRUE) + NoLegend() + ggtitle(paste("Cluster level:", level_select))
 # generates dictionary of all level sets of nodes where key is nesting (as a character) and value is list of nodes (as comma 
 # separated character)
-single_dict <- vector(mode="list")
+rcl_dict <- vector(mode="list")
 for (row_num in 1:nrow(rcl_table)) {
   single_2_vec = c()
   str_nodes <- rcl_table[row_num, 5]
@@ -74,16 +74,22 @@ for (row_num in 1:nrow(rcl_table)) {
   single_2_vec <- append(single_2_vec, add_nodes)
   single_2_bar <- barcodes_table$barcode[barcodes_table$node %in% single_2_vec]
   bar_str <- paste(single_2_bar, collapse = ",")
-  single_dict[as.character(rcl_table[row_num, 4])] <- bar_str
+  rcl_dict[as.character(rcl_table[row_num, 4])] <- bar_str
 }
-names(single_dict)
-#plotting single clustering at a specific level
-bar_highlight <- strsplit(as.character(single_dict["L35258_5008::L34841_2579"]), split = ",")[[1]]
-specific_clusters <- DimPlot(srat_graphs, group.by = "nesting", cells.highlight = bar_highlight, cols.highlight = "#004225", sizes.highlight = 0.1) + NoLegend() + ggtitle("L35258_5008::L34841_2579")
+#creating dictionary of all cluster top marker gene dataframes
+df_dict <- vector(mode="list")
+for ( row_num in 1:nrow(rcl_table)) {
+  bar_highlight <- unlist(strsplit(as.character(rcl_dict[rcl_table[row_num, 4]]), split = ","))
+  subset_srat <- srat_graphs[, bar_highlight]
+  nest_markers <- FindAllMarkers(subset_srat)
+  df_dict[as.character(rcl_table[row_num, 4])] <- list(nest_markers)
+}
 #creating new table that will contain marker gene info for each nesting
 gene_table <- rcl_table[,c(1:4)]
 gene_table$genes <- NA
-#removing cluster info from nesting column leaving just cluster size
+gene_table$enrichment <- NA
+gene_table$go_description <- NA
+#removing cluster info from nesting column leaving just cluster size in table
 nesting_vec <- as.character(rcl_table$nesting)
 for (index in 1:length(nesting_vec)) {
   nest_split <- unlist(strsplit(nesting_vec[index], "::"))
@@ -95,13 +101,16 @@ for (index in 1:length(nesting_vec)) {
   nesting_vec[index] <- size_string
 }
 gene_table$nesting <- nesting_vec
-#finding top marker genes for each cluster
-for ( row_num in 1:nrow(rcl_table)) {
-  bar_highlight <- unlist(strsplit(as.character(single_dict[rcl_table[row_num, 4]]), split = ","))
-  subset_srat <- srat_graphs[, bar_highlight]
-  nest_markers <- FindAllMarkers(subset_srat)
-  write.table(nest_markers, paste(output_path, rcl_table[row_num, 4], ".txt", sep = ""),  quote = FALSE, sep = "\t", row.names = FALSE)
+# Adding top marker gene info to table
+for (row_num in 1:nrow(rcl_table)) {  
+  nesting <- as.character(rcl_table[row_num, 4])
+  nest_markers <- as.data.frame(df_dict[nesting])
+  if (length(nest_markers) == 0) {
+    write.table(nest_markers, paste(output_path, "NO_MARKERS_", nesting, ".txt", sep = ""),  quote = FALSE, sep = "\t", row.names = FALSE)
+  }
   if (length(nest_markers) != 0) {
+    colnames(nest_markers) <- c("p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj", "cluster", "gene")
+    write.table(nest_markers, paste(output_path, nesting, ".txt", sep = ""),  quote = FALSE, sep = "\t", row.names = FALSE)
     log_p_vals <- -log10(nest_markers$p_val)
     nest_markers$rounded_p_val <- round(log_p_vals)
     nest_markers$rounded_p_val <- as.numeric(gsub("Inf", 323, nest_markers$rounded_p_val))
@@ -115,6 +124,36 @@ for ( row_num in 1:nrow(rcl_table)) {
       combined_string <- paste(as.character(combined_vec), collapse=",")
     }
     gene_table[row_num, 5] <- combined_string
+  }
+}
+#adding GO database info to table
+for (row_num in 1:nrow(rcl_table)) {
+  nesting <- as.character(rcl_table[row_num, 4])
+  nest_markers <- as.data.frame(df_dict[nesting])
+  if (length(nest_markers) == 0) {
+    write.table(nest_markers, paste(output_path, "NO_MARKERS_", nesting, ".txt", sep = ""),  quote = FALSE, sep = "\t", row.names = FALSE)
+  }
+  if (length(nest_markers) != 0) {
+    colnames(nest_markers) <- c("p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj", "cluster", "gene")
+    nest_genes <- rownames(nest_markers)
+    no_dots_genes <- sub("\\..*", "", nest_genes)
+    nest_entrez <- mapIds(org.Hs.eg.db, no_dots_genes, 'ENTREZID', 'SYMBOL')
+    no_nas <- as.vector(nest_entrez[!is.na(nest_entrez)])
+    go_output <- enrichGO(no_nas, "org.Hs.eg.db") #, ont = "ALL")
+    go_result <- go_output@result
+    write.table(go_result, paste(output_path, nesting, ".txt", sep = ""), sep = "\t", quote = FALSE, row.names = FALSE)
+    go_result <- go_result %>% arrange(desc(p.adjust))
+    top_go <- head(rownames(go_result), n=10)
+    go_pvals <- round(head(go_result$p.adjust, n=10), digits = 4)
+    go_desc <- head(go_result$Description, n=10)
+    go_vec <- c()
+    for(index in 1:length(top_go)){
+      go_char <- paste(top_go[index], "(", go_pvals[index], ")", sep = "")
+      go_vec <- append(go_vec, go_char)
+      go_string <- paste(as.character(go_vec), collapse=",")
+    }
+    gene_table[row_num, 6] <- go_string
+    gene_table[row_num, 7] <- paste(as.character(go_desc), collapse=", ")
   }
 }
 #exporting marker genes table
