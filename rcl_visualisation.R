@@ -135,9 +135,8 @@ for (row_num in 1:nrow(rcl_table)) {
   }
   if (length(nest_markers) != 0) {
     colnames(nest_markers) <- c("p_val", "avg_log2FC", "pct.1", "pct.2", "p_val_adj", "cluster", "gene")
-    nest_genes <- rownames(nest_markers)
-    no_dots_genes <- sub("\\..*", "", nest_genes)
-    nest_entrez <- mapIds(org.Hs.eg.db, no_dots_genes, 'ENTREZID', 'SYMBOL')
+    nest_genes <- nest_markers$gene
+    nest_entrez <- mapIds(org.Hs.eg.db, nest_genes, 'ENTREZID', 'SYMBOL')
     no_nas <- as.vector(nest_entrez[!is.na(nest_entrez)])
     go_output <- enrichGO(no_nas, "org.Hs.eg.db") #, ont = "ALL")
     go_result <- go_output@result
