@@ -11,6 +11,7 @@ input_seurat <- theargs$seurat
 input_rcl <- theargs$rcl
 input_barcode <- theargs$barcode
 output_path <- theargs$output
+#Reading in Seurat object and copying data matrix to count matrix
 h5_srat <- LoadH5Seurat(input_seurat)
 h5_srat@assays$RNA@counts <- h5_srat@assays$RNA@data
 srat <- FindVariableFeatures(h5_srat, selection.method = "vst", nfeatures = 2000)
@@ -18,10 +19,14 @@ all.genes <- rownames(srat)
 srat <- ScaleData(srat, features = all.genes)
 srat <- RunPCA(srat, features = VariableFeatures(object = srat))
 srat_graphs<- FindNeighbors(srat)
+#Reading in rcl table
 rcl_table <- read.table(input_rcl, sep = "\t", header = TRUE)
+#Set nesting column variable type to factor
 rcl_table$nesting <- as.factor(rcl_table$nesting)
+#Reading in barcodes table
 barcodes_table <- read.table(input_barcode, header = TRUE)
 colnames(barcodes_table) <- c("node", "barcode")
+#Adding nesting column to metadata
 srat_graphs@meta.data$nesting <- NA
 #selecting specifc cluster levels
 cluster_levels = c(1,2)
