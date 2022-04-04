@@ -1,14 +1,16 @@
-1) Originally tested the 4 different clustering algorithms available in Seurat clustering FindClusters function (https://satijalab.org/seurat/reference/findclusters) 
+1) Originally tested the 4 different clustering algorithms available in Seurat clustering FindClusters function.  
+  (https://satijalab.org/seurat/reference/findclusters) 
   on example data (https://github.com/cellgeni/notebooks/tree/master/data/soupX_pbmc10k_filt)
 
-2) Next, a dataset from a Hao et Hao integration paper (https://zenodo.org/record/4546839#.YkrJky-cbmF) was used to explore clustering. In this dataset,
-  it was noticed that the count matrix had been removed to save space.
+2) Next, a dataset from a Hao et Hao integration paper (https://zenodo.org/record/4546839#.YkrJky-cbmF) was used to explore clustering. 
+  In this dataset, it was noticed that the count matrix had been removed to save space.
   
-3) We then asked how to recreate the original data (https://github.com/satijalab/azimuth/issues/98) which instructed us to a snake file (https://github.com/satijalab/azimuth-references/tree/master/human_pbmc)
+3) We then asked how to recreate the original data (https://github.com/satijalab/azimuth/issues/98) which instructed us to a snake file
+  (https://github.com/satijalab/azimuth-references/tree/master/human_pbmc)
   which we used to recreate the data
   
-4) Additionally, we also found what we beleived to be the original data (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE164378) which was also confirmed in the
-  github issue answer given earlier
+4) Additionally, we also found what we beleived to be the original data (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE164378) 
+  which was also confirmed in the github issue answer given earlier
   
 5) The data generated from the snakefile was used to analyse lots of rcl information as well as mcl and leiden clustering shown in a notebook 
   (https://github.com/SimonDMurray/clustering_investigation/blob/main/rcl_visualisation.R)
