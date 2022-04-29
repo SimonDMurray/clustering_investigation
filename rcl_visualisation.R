@@ -49,6 +49,7 @@ for (cluster in clusters_used) {
   cluster_genes <- as.vector(cluster_markers$gene)
   enrich_output <- enricher(cluster_genes, TERM2GENE = gmt)
   enrich_result <- as.data.frame(enrich_output@result)
+  enrich_result <- enrich_result %>% arrange(pvalue)
   write.table(enrich_result, paste(output_path, "cluster_", cluster, "_enrichment.txt", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE)
   enrich_dict[as.character(cluster)] <- list(enrich_result)
 }
