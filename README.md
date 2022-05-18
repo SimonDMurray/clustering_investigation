@@ -20,4 +20,6 @@ run_r_scripts.sh - wrapper that allows user to execute any R script in this repo
 
 visualise_clustering.R - Seurat data that has been normalised, scaled and had UMAP ran on it is visualised to show clusterings and whether a node often changes cluster or not depending on method (mcxdump generates file used here)
 
-rcl_visualisation.R - Script that takes output from RCL consensus clustering and integrates this with the azimuth vitessce data for marker and clustering analysis.
+rcl_enrichment.R - Script that takes output from RCL consensus clustering and integrates this with the azimuth vitessce data for marker and clustering analysis.
+
+run_enrichment.sh - wrapper script for running rcl_enrichment
