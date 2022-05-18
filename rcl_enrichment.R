@@ -35,7 +35,7 @@ colnames(srat@meta.data) <- c("celltype.l1", "celltype.l2", "celltype.l3", "ori.
 #Identifying clusters with more than input cell number
 cluster_size <- as.data.frame(dplyr::count(srat@meta.data, cluster))
 colnames(cluster_size) <- c("cluster", "cell_number")
-clusters_used_df <- cluster_size[cluster_size$cell_number > int(cutoff),]
+clusters_used_df <- cluster_size[cluster_size$cell_number > as.integer(cutoff),]
 clusters_used <- as.vector(clusters_used_df$cluster)
 #Subsetting seurat to cells in clusters with size > 10
 barcodes_needed <- rownames(srat@meta.data[srat@meta.data$cluster %in% clusters_used,])
