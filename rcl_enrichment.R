@@ -1,3 +1,5 @@
+# Example running
+# Rscript rcl_visualisation.R --seurat=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/data/vitessce_ref.h5Seurat --rcl=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/azimuth_gex_results/rcl_mcl/rcl.res1600.txt --hallmark=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/data/hallmark.txt --output=/lustre/scratch117/cellgen/cellgeni/TIC-misc/tic-1129/test/
 library(Seurat)
 library(SeuratDisk)
 library(SeuratData)
@@ -7,10 +9,12 @@ library(ggplot2)
 library(data.table)
 library(clusterProfiler)
 library('org.Hs.eg.db')
+library(SoupX)
 theargs <- R.utils::commandArgs(asValues=TRUE)
 input_seurat <- theargs$seurat
 input_rcl <- theargs$rcl
 input_hallmark <- theargs$hallmark
+cutoff <- theargs$cellnumber
 output_path <- theargs$output
 #Reading in Seurat object and copying data matrix to count matrix
 srat <- LoadH5Seurat(input_seurat)
@@ -28,30 +32,34 @@ rcl_table <- rcl_table[rcl_table$barcode != "dummy",]
 #Assigning each barcode to a rcl cluster
 srat@meta.data <- cbind(srat@meta.data, rcl_table$cluster)
 colnames(srat@meta.data) <- c("celltype.l1", "celltype.l2", "celltype.l3", "ori.index", "nCount_refAssay", "nFeature_refAssay", "cluster")
-#Identifying clusters with more than 10 cells
+#Identifying clusters with more than input cell number
 cluster_size <- as.data.frame(dplyr::count(srat@meta.data, cluster))
 colnames(cluster_size) <- c("cluster", "cell_number")
-clusters_used_df <- cluster_size[cluster_size$cell_number > 10,]
+clusters_used_df <- cluster_size[cluster_size$cell_number > int(cutoff),]
 clusters_used <- as.vector(clusters_used_df$cluster)
 #Subsetting seurat to cells in clusters with size > 10
 barcodes_needed <- rownames(srat@meta.data[srat@meta.data$cluster %in% clusters_used,])
-subset_srat <- srat[, barcodes_needed]
-#Setting idents and finding marker genes
-Idents(subset_srat) <- subset_srat@meta.data$cluster
-subset_markers <- FindAllMarkers(subset_srat, test.use = "roc")
-subset_markers <- subset_markers %>% arrange(desc(myAUC))
-write.table(subset_markers, paste(output_path, "markers.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+#Running quickmarkers
+qmatrix <- srat@assays$RNA@counts
+qmarkers <- quickMarkers(qmatrix, srat$cluster, N=1000, FDR=0.05)
+qmarkers <- qmarkers %>% arrange(desc(tfidf))
+write.table(qmarkers, paste(output_path, "qmarkers.txt", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE)
 #Reading in hallmark genes
 gmt <- read.gmt(input_hallmark)
 enrich_dict <- vector(mode="list")
+enrich_dict <- vector(mode="list")
 for (cluster in clusters_used) {
-  cluster_markers <- subset_markers[subset_markers$cluster == cluster, ]
+  cluster_markers <- qmarkers[qmarkers$cluster == cluster, ]
   cluster_genes <- as.vector(cluster_markers$gene)
   enrich_output <- enricher(cluster_genes, TERM2GENE = gmt)
-  enrich_result <- as.data.frame(enrich_output@result)
-  enrich_result <- enrich_result %>% arrange(pvalue)
-  write.table(enrich_result, paste(output_path, "cluster_", cluster, "_enrichment.txt", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE)
-  enrich_dict[as.character(cluster)] <- list(enrich_result)
+  if (is.null(enrich_output)) {
+    print(paste("Cluster", cluster, "does not have enough genes"))
+  }
+  else {
+    enrich_result <- as.data.frame(enrich_output@result)
+    enrich_result <- enrich_result %>% arrange(pvalue)
+    enrich_dict[as.character(cluster)] <- list(enrich_result)
+  }
 }
 #export metadata table
 write.table(srat@meta.data,  paste(output_path, "metadata.txt", sep = ""), sep = "\t", quote = FALSE)
